@@ -6,12 +6,14 @@ import (
 
     "github.com/gorilla/mux"
 
-    "cookbook/backend/account/manager"
+    "github.com/zozoee27/cookbook/backend/database"
+    "github.com/zozoee27/cookbook/backend/account/manager"
 )
 
 func main() {
     router := mux.NewRouter()
 
+    initDatabase()
     initAccountOps(router)
 
     log.Print("Cookbook server is running and listening on port: 8080")
@@ -21,6 +23,10 @@ func main() {
 func initAccountOps(router *mux.Router) {
     router.HandleFunc("/account/register", accountManager.RegisterAccount).Methods("POST");
 
+}
+
+func initDatabase() {
+    database.InitializeConnection()
 }
 
 

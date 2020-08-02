@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"cookbook/backend/account"
+	"github.com/zozoee27/cookbook/backend/account"
 )
 
 func RegisterAccount (w http.ResponseWriter, r *http.Request) {
