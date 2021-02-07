@@ -7,31 +7,42 @@ import (
 	"net/http"
 
 	"github.com/zozoee27/cookbook/backend/account"
+	"github.com/zozoee27/cookbook/backend/database"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterAccount (w http.ResponseWriter, r *http.Request) {
+type AccountManager struct {
+	Database     *mongo.Database
+	UserDatabase *database.UserDatabase
+}
 
-    log.Print("Recieved /account/register command")
+func Initialize(db *mongo.Database) *AccountManager {
+	return &AccountManager{
+		Database:     db,
+		UserDatabase: database.InitializeUserDatabase(db.Collection("users"))}
+}
 
-    var account account.Account;
+func (m *AccountManager) RegisterAccount(w http.ResponseWriter, r *http.Request) {
 
-    body, _:= ioutil.ReadAll(r.Body)
-    err := json.Unmarshal(body, &account)
+	log.Print("Recieved /account/register command")
 
-    if err != nil {
-        log.Print("AccountManager::RegisterAccount: Cannot unmarshal json")
-        return
-    }
+	var account account.Account
 
-    Username := "username: " + account.Username 
-    firstname := "firstName: " + account.FirstName 
-    lastname := "lastName: " + account.LastName 
-    email := "email: " + account.Email 
-    password := "password: " + account.Password 
+	body, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(body, &account)
 
-    log.Print(Username)
-    log.Print(firstname)
-    log.Print(lastname)
-    log.Print(email)
-    log.Print(password)
+	if err != nil {
+		log.Print("AccountManager::RegisterAccount: Cannot unmarshal json")
+		return
+	}
+
+	err = m.UserDatabase.AddUserToCollection(account)
+	if err != nil {
+		log.Print("Could not add user to collection: ", err)
+	}
+}
+
+func (m *AccountManager) ClearAllEntries() error {
+	return m.UserDatabase.ClearAllEntries()
 }

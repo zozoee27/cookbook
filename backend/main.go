@@ -1,32 +1,12 @@
 package main
 
 import (
-    "log"
-    "net/http"
-
-    "github.com/gorilla/mux"
-
-    "github.com/zozoee27/cookbook/backend/database"
-    "github.com/zozoee27/cookbook/backend/account/manager"
+	"github.com/zozoee27/cookbook/backend/application"
 )
 
 func main() {
-    router := mux.NewRouter()
+	a := application.App{}
+	a.Initialize("CookbookDB")
 
-    initDatabase()
-    initAccountOps(router)
-
-    log.Print("Cookbook server is running and listening on port: 8080")
-    http.ListenAndServe(":8080" , router)
+	a.Run(":8080")
 }
-
-func initAccountOps(router *mux.Router) {
-    router.HandleFunc("/account/register", accountManager.RegisterAccount).Methods("POST");
-
-}
-
-func initDatabase() {
-    database.InitializeConnection()
-}
-
-
