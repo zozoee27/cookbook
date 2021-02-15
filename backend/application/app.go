@@ -3,8 +3,11 @@ package application
 import (
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	"github.com/zozoee27/cookbook/backend/account/manager"
 	"github.com/zozoee27/cookbook/backend/database"
 
@@ -42,8 +45,10 @@ func (a *App) StopApplication() {
 
 func (a *App) initializeRoutes() {
 	log.Print("Initializing routes")
-	a.Router.HandleFunc("/account/register", a.AccountManager.RegisterAccount).Methods("POST")
-	a.Router.HandleFunc("/", home)
+	a.Router.Handle("/account/register", handlers.ContentTypeHandler(
+		handlers.LoggingHandler(os.Stdout,
+			http.HandlerFunc(a.AccountManager.RegisterAccount)), "application/json")).Methods("POST")
+	a.Router.Handle("/", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(home)))
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

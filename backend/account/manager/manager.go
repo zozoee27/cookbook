@@ -24,7 +24,6 @@ func Initialize(db *mongo.Database) *AccountManager {
 }
 
 func (m *AccountManager) RegisterAccount(w http.ResponseWriter, r *http.Request) {
-
 	log.Print("Recieved /account/register command")
 
 	var account account.Account
