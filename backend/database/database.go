@@ -9,36 +9,34 @@ import (
 )
 
 type Connection struct {
-	DatabaseClient *mongo.Client
 	Database       *mongo.Database
+	DatabaseClient *mongo.Client
 }
 
-func InitializeConnection(dbName string) Connection {
+func (c *Connection) InitializeConnection(dbName string) {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
 	var err error
-	var result Connection
-	result.DatabaseClient, err = mongo.Connect(context.TODO(), clientOptions)
+	c.DatabaseClient, err = mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = result.DatabaseClient.Ping(context.TODO(), nil)
+	err = c.DatabaseClient.Ping(context.TODO(), nil)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result.Database = result.DatabaseClient.Database(dbName)
+	c.Database = c.DatabaseClient.Database(dbName)
 
 	log.Print("Connected to MongoDB on port 27017")
-	return result
 }
 
-func Disconnect(databaseClient *mongo.Client) {
+func (c *Connection) Disconnect() {
 
-	err := databaseClient.Disconnect(context.TODO())
+	err := c.DatabaseClient.Disconnect(context.TODO())
 
 	if err != nil {
 		log.Fatal(err)

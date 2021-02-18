@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/zozoee27/cookbook/backend/application"
+	"github.com/zozoee27/cookbook/backend/app"
 )
 
 func main() {
-	a := application.App{}
+	a := app.App{}
 	a.Initialize("CookbookDB")
 
 	a.Run(":8080")
