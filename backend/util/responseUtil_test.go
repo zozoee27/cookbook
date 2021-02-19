@@ -1,3 +1,5 @@
+// +build unit
+
 package util
 
 import (
@@ -5,6 +7,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/jimlawless/whereami"
+
+	"github.com/zozoee27/cookbook/backend/testutil"
 )
 
 func TestRespondWithError(t *testing.T) {
@@ -16,7 +22,7 @@ func TestRespondWithError(t *testing.T) {
 	RespondWithError(w, status, str)
 
 	expectedJson, _ := json.Marshal(body)
-	checkResponse(t, w, status, expectedJson)
+	checkResponse(t, w, status, expectedJson, whereami.WhereAmI())
 }
 
 func TestRespondWithJson(t *testing.T) {
@@ -35,7 +41,7 @@ func TestRespondWithJson(t *testing.T) {
 	RespondWithJson(w, status, body)
 
 	expectedJson, _ := json.Marshal(body)
-	checkResponse(t, w, status, expectedJson)
+	checkResponse(t, w, status, expectedJson, whereami.WhereAmI())
 }
 
 func TestResponseWithCode(t *testing.T) {
@@ -44,37 +50,22 @@ func TestResponseWithCode(t *testing.T) {
 	w := httptest.NewRecorder()
 	RespondWithCode(w, status)
 
-	checkResponseCode(t, w, status)
+	checkResponseCode(t, w, status, whereami.WhereAmI())
 }
 
-func checkResponseCode(t *testing.T, w *httptest.ResponseRecorder, expectedCode int) {
-	if w.Code != expectedCode {
-		t.Errorf("Response Code Is wrong: Actual[%d] Expected[%d]", w.Code, expectedCode)
-	}
+func checkResponseCode(t *testing.T, w *httptest.ResponseRecorder, expectedCode int, where string) {
+	testutil.CompareInt(t, w.Code, expectedCode, "Response Code Is Wrong", where)
 }
 
-func checkResponse(t *testing.T, w *httptest.ResponseRecorder, expectedCode int, expectedJson []byte) {
-	if w.HeaderMap.Get("Content-Type") != "application/json" {
-		t.Errorf("Content type of response is not JSON")
-	}
+func checkResponse(t *testing.T, w *httptest.ResponseRecorder, expectedCode int, expectedJson []byte, where string) {
 
-	checkResponseCode(t, w, expectedCode)
+	checkResponseCode(t, w, expectedCode, where)
 
-	if w.Code != expectedCode {
-		t.Errorf("Response Code Is wrong")
-	}
+	testutil.CompareString(t,
+		w.HeaderMap.Get("Content-Type"),
+		"application/json",
+		"Content type of response is not JSON",
+		where)
 
-	var actualBytes = w.Body.Bytes()
-
-	if len(actualBytes) != len(expectedJson) {
-		t.Errorf("Response length is different: Actual[%d] Expected[%d]", len(actualBytes), len(expectedJson))
-		return
-	}
-
-	for i, v := range actualBytes {
-		if v != expectedJson[i] {
-			t.Errorf("Response body is wrong: \n  Actual[%s]\n  Expected[%s]\n]: ", actualBytes, expectedJson)
-			return
-		}
-	}
+	testutil.CompareByteArray(t, w.Body.Bytes(), expectedJson, "Response body is different", where)
 }

@@ -26,13 +26,14 @@ func (u *User) CreateUser(user *entity.User) error {
 	return nil
 }
 
-func (u *User) FindUserFromCollection(username string) *entity.User {
+func (u *User) FindUserFromCollection(username string) (*entity.User, error) {
 	result, err := u.db.FindOne(username)
+
 	if err != nil {
 		log.Print("Find user error: ", err)
 	}
 
-	return result
+	return result, err
 }
 
 func (u *User) ClearAllEntries() error {
