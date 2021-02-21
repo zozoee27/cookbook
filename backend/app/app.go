@@ -12,23 +12,25 @@ import (
 )
 
 type App struct {
-	router             *mux.Router
-	databaseConnection *database.Connection
-	userService        *service.User
+	Router             *mux.Router
+	DatabaseConnection *database.Connection
+	UserService        *service.User
 }
 
 func (a *App) Initialize(databaseName string) {
-	a.router = mux.NewRouter()
+	a.Router = mux.NewRouter()
 
-	a.databaseConnection = &database.Connection{}
-	a.databaseConnection.InitializeConnection(databaseName)
+	a.DatabaseConnection = &database.Connection{}
+	a.DatabaseConnection.InitializeConnection(databaseName)
+
+	a.createUserServices()
 
 	a.initializeRoutes()
 }
 
 func (a *App) Run(address string) {
 	log.Print("Cookbook server is running and listening on port: ", address)
-	err := http.ListenAndServeTLS(address, "/etc/ssl/localhost-certs/localhost.crt", "/etc/ssl/localhost-certs/localhost.key", a.router)
+	err := http.ListenAndServeTLS(address, "/etc/ssl/localhost-certs/localhost.crt", "/etc/ssl/localhost-certs/localhost.key", a.Router)
 
 	if err != nil {
 		log.Fatal("Could not start server: ", err)
@@ -36,16 +38,16 @@ func (a *App) Run(address string) {
 }
 
 func (a *App) StopApplication() {
-	a.databaseConnection.Disconnect()
+	a.DatabaseConnection.Disconnect()
 }
 
 func (a *App) initializeRoutes() {
 	log.Print("Initializing routes")
-	handlers.MakeUserHandlers(a.router, a.userService)
+	handlers.MakeUserHandlers(a.Router, a.UserService)
 }
 
 func (a *App) createUserServices() {
-	db := database.CreateUserMongoDb(a.databaseConnection.Database.Collection("users"))
-	a.userService = service.CreateUserService(db)
+	db := database.CreateUserMongoDb(a.DatabaseConnection.Database.Collection("users"))
+	a.UserService = service.CreateUserService(db)
 
 }

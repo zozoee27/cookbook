@@ -1,10 +1,7 @@
-// +build acceptance
-
 package acceptanceTests
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -12,25 +9,26 @@ import (
 	"os"
 	"testing"
 
+	"github.com/jimlawless/whereami"
+
 	"github.com/zozoee27/cookbook/backend/app"
 	"github.com/zozoee27/cookbook/backend/entity"
-
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/zozoee27/cookbook/backend/testutil"
 )
 
-var appplication app.App
+var application app.App
 
 func TestMain(m *testing.M) {
-	appplication.Initialize("CookbookDB_Test")
+	application.Initialize("CookbookDB_Test")
 
 	code := m.Run()
 	clearUserDB()
 	os.Exit(code)
-	appplication.StopApplication()
+	application.StopApplication()
 }
 
 func clearUserDB() {
-	//	err := app.AccountManager.ClearAllEntries()
+	err := application.UserService.ClearAllEntries()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +38,7 @@ func executeJsonRequest(req *http.Request) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
 
 	req.Header.Set("Content-Type", "application/json")
-	app.Router.ServeHTTP(rr, req)
+	application.Router.ServeHTTP(rr, req)
 
 	return rr
 }
@@ -51,12 +49,10 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	}
 }
 
-func getUserInfoFromDatabase(t *testing.T, username string) account.Account {
-	var result account.Account
+func getUserInfoFromDatabase(t *testing.T, username string) *entity.User {
 
-	filter := bson.D{{"username", username}}
+	result, err := application.UserService.FindUserFromCollection(username)
 
-	err := app.AccountManager.UserDatabase.UserCollection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		t.Errorf("Could not find user %s", username)
 	}
@@ -67,7 +63,7 @@ func TestRegisterUserWithValidInfo(t *testing.T) {
 	clearUserDB()
 
 	// Prepare account info
-	accountInfo := account.Account{
+	accountInfo := &entity.User{
 		Username:  "ButtersButtons",
 		Email:     "butters@buttons.com",
 		FirstName: "Butters",
@@ -86,18 +82,16 @@ func TestRegisterUserWithValidInfo(t *testing.T) {
 
 	result := getUserInfoFromDatabase(t, "ButtersButtons")
 
-	if result != accountInfo {
-		t.Errorf("Account information different")
-	}
+	testutil.CompareUserEntity(t, result, accountInfo, "Account information different", whereami.WhereAmI())
 }
 
 func TestRegisterUserWithMissingInfo(t *testing.T) {
 	var tests = []struct {
 		name         string
-		accountInfo  account.Account
+		accountInfo  entity.User
 		expectedCode int
 	}{
-		{"Empty account", account.Account{}, http.StatusBadRequest},
+		{"Empty account", entity.User{}, http.StatusBadRequest},
 	}
 
 	for _, tt := range tests {

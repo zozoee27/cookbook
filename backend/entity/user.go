@@ -14,9 +14,9 @@ type User struct {
 
 func (u *User) PrettyString() string {
 	return fmt.Sprintf(`
-		UserName:[%s] \n
-		FirstName:[%s] \n
-		LastName:[%s] \n
-		Email:[%s] \n
-		Password:[%s]]\n`, u.Username, u.FirstName, u.LastName, u.Email, u.Password)
+		UserName:[%s]
+		FirstName:[%s]
+		LastName:[%s]
+		Email:[%s]
+		Password:[%s]]`, u.Username, u.FirstName, u.LastName, u.Email, u.Password)
 }

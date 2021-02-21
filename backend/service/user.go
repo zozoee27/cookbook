@@ -12,6 +12,7 @@ type User struct {
 }
 
 func CreateUserService(d user.Database) *User {
+	log.Print("creating user service: ")
 	return &User{
 		db: d,
 	}

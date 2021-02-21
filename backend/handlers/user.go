@@ -36,7 +36,7 @@ func registerAccount(w http.ResponseWriter, r *http.Request, s *service.User) {
 		return
 	}
 
-	//	err = m.UserDatabase.AddUserToCollection(user)
+	err = s.CreateUser(&user)
 	if err != nil {
 		log.Print("Could not add user to collection: ", err)
 		util.RespondWithError(w, http.StatusBadRequest, err.Error())

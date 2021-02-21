@@ -64,7 +64,7 @@ func CompareByteArray(t *testing.T, actual, expected []byte, err, where string) 
 
 func CompareUserEntity(t *testing.T, actual, expected *entity.User, err, where string) bool {
 	isSame := true
-	if actual != expected && actual != nil && expected != nil {
+	if actual != nil && expected != nil && *actual != *expected {
 		t.Errorf("%s - %s: \nActual User:[%s]\nExpected User:[%s]\n", err, where, actual.PrettyString(), expected.PrettyString())
 		isSame = false
 	} else if actual == nil && expected != nil {
